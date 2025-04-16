@@ -1,0 +1,228 @@
+package com.databaseproject.cinedev.stages;
+
+import com.databaseproject.cinedev.models.base.User;
+import com.databaseproject.cinedev.models.task.Task;
+import com.databaseproject.cinedev.services.tasks.task.ITaskService;
+import com.databaseproject.cinedev.stages.components.TaskForm;
+import com.databaseproject.cinedev.utils.Utils;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+public class TaskPage implements IWindowScene {
+    ITaskService taskService;
+
+    private User user;
+    private Task task;
+    private Integer idUser;
+
+
+    public TaskPage(User existingUser, ITaskService taskService) {
+        this.user = existingUser;
+        this.taskService = taskService;
+    }
+
+    @Override
+    public Scene showWindow(Stage primaryStage) {
+        StackPane form = taskPage(primaryStage);
+
+        VBox root = new VBox(form);
+        root.setBackground(Utils.backgroundImageWindows());
+        root.setSpacing(10);
+
+        return new Scene(root, 1280, 720);
+    }
+
+    private StackPane taskPage(Stage primaryStage) {
+        Rectangle rectangle = new Rectangle(1280, 720);
+        rectangle.setFill(Color.WHITE);
+        rectangle.setStroke(Color.BLACK);
+        rectangle.setStrokeWidth(2);
+
+        Label title = new Label("Welcome " + user.getFullName() + " to CineDev!");
+        title.setStyle(
+                "-fx-font-weight: bold;" +
+                        "-fx-font-size: 20px;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-family: 'Arial';"
+        );
+
+        HBox titleBox = new HBox(title);
+        titleBox.setAlignment(Pos.CENTER);
+        titleBox.setSpacing(2);
+
+        Button buttonAddTask = createButton("Add Task", "#4CAF50");
+        TableView<Task> table = createTableTasks(primaryStage);
+        buttonAddTask.setOnAction(e -> {
+            TaskForm showModalTask = new TaskForm(user, task, () -> table.setItems(getTasks()));
+            showModalTask.showFormModal(primaryStage);
+        });
+
+        Button buttonAddCategory = createButton("Add Category", "#2196F3");
+        buttonAddCategory.setOnAction(e -> {
+            Utils.sendMessageError("Form para agregar las categorias");
+        });
+
+        Button buttonEndedTask = createButton("Ended Task", "#F44336");
+        buttonEndedTask.setOnAction(e -> {
+            Utils.sendMessageError("Tabla con las tareas terminadas");
+        });
+
+        Button returnToMainPage = createButton("Back to Main", "#000000");
+        returnToMainPage.setOnAction(e -> {
+            Utils.loadWindowsToShow(new MainPage(user), primaryStage);
+        });
+
+        HBox buttons = new HBox(25, buttonAddTask, buttonAddCategory, buttonEndedTask, returnToMainPage);
+        buttons.setAlignment(Pos.CENTER);
+
+        VBox form = new VBox(50, titleBox, buttons, table);
+        form.setPadding(new Insets(50));
+        form.setMaxWidth(Double.MAX_VALUE);
+        form.setFillWidth(true);
+
+        return new StackPane(form);
+    }
+
+    private static Button createButton(String label, String color) {
+        Button button = new Button(label);
+        button.setStyle(
+                "-fx-background-color: " + color + "; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-weight: bold;"
+        );
+        button.setMaxWidth(Double.MAX_VALUE);
+        return button;
+    }
+
+    private TableView<Task> createTableTasks(Stage primaryStage) {
+        TableView<Task> table = new TableView<>();
+        Map<String, Double> columnWidths = Map.of(
+                "name", 0.15,
+                "description", 0.25,
+                "category", 0.10,
+                "creationDate", 0.10,
+                "expirationDate", 0.10,
+                "state", 0.10
+        );
+
+
+        String[] columnData = {"Name", "Description", "Category", "Creation Date", "End Date", "State"};
+        String[] properties = {"name", "description", "category", "creationDate", "expirationDate", "state"};
+
+        for (int i = 0; i < columnData.length; i++) {
+            if (properties[i].equals("creationDate")) {
+                TableColumn<Task, String> creationDateColumn = new TableColumn<>(columnData[i]);
+                creationDateColumn.setCellValueFactory(cellData ->
+                        new SimpleStringProperty(Utils.formatDate(cellData.getValue().getCreatedAt()))
+                );
+                creationDateColumn.prefWidthProperty().bind(table.widthProperty().multiply(columnWidths.getOrDefault(properties[i], 0.10)));
+                table.getColumns().add(creationDateColumn);
+
+            } else if (properties[i].equals("state")) {
+                TableColumn<Task, String> stateColumn = new TableColumn<>(columnData[i]);
+
+                stateColumn.setCellValueFactory(cellData -> {
+                    var state = cellData.getValue().getState();
+                    return new SimpleStringProperty(state != null ? state.getName() : "Sin estado");
+                });
+                stateColumn.prefWidthProperty().bind(table.widthProperty().multiply(columnWidths.getOrDefault(properties[i], 0.10)));
+                table.getColumns().add(stateColumn);
+
+            } else if (properties[i].equals("category")) {
+                TableColumn<Task, String> categoryColumn = new TableColumn<>(columnData[i]);
+
+                categoryColumn.setCellValueFactory(cellData -> {
+                    var category = cellData.getValue().getCategory();
+                    return new SimpleStringProperty(category != null ? category.getName() : "Sin categoría");
+                });
+
+                categoryColumn.prefWidthProperty().bind(table.widthProperty().multiply(columnWidths.getOrDefault(properties[i], 0.10)));
+                table.getColumns().add(categoryColumn);
+
+            } else {
+                TableColumn<Task, String> column = new TableColumn<>(columnData[i]);
+                column.setCellValueFactory(new PropertyValueFactory<>(properties[i]));
+                column.prefWidthProperty().bind(table.widthProperty().multiply(columnWidths.getOrDefault(properties[i], 0.10)));
+                table.getColumns().add(column);
+            }
+        }
+
+        table.getColumns().add(actionsColumn(table, primaryStage));
+        table.setItems(getTasks());
+        return table;
+    }
+
+
+    private TableColumn<Task, Void> actionsColumn(TableView<Task> table, Stage primaryStage) {
+        TableColumn<Task, Void> actionsColumn = new TableColumn<>("Actions");
+        actionsColumn.setCellFactory(col -> new TableCell<>() {
+            private final Button btnEdit = new Button("Edit");
+            private final Button btnDelete = new Button("Delete");
+
+            {
+                LocalDateTime now = LocalDateTime.now();
+                String formattedNow = Utils.formatDate(now);
+                btnEdit.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
+                btnDelete.setStyle("-fx-background-color: #F44336; -fx-text-fill: white;");
+
+                btnEdit.setOnAction(e -> {
+                    Task task = getTableView().getItems().get(getIndex());
+                    TaskForm editForm = new TaskForm(user, task, () -> table.setItems(getTasks()));
+                    editForm.showFormModal(primaryStage);
+                });
+
+                btnDelete.setOnAction(e -> {
+                    Task task = getTableView().getItems().get(getIndex());
+                    boolean confirmed = Utils.confirmDialog(
+                            "Hey, " + user.getFullName() +
+                            ". Are you sure you want to eliminate this task?\n\n" +
+                            "This action will be registered on: : " + formattedNow
+                    );
+
+                    if (confirmed) {
+                        task.setDeletedAt(now);
+                        taskService.deleteTask(task);
+                        table.setItems(getTasks());
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    HBox actions = new HBox(10, btnEdit, btnDelete);
+                    actions.setAlignment(Pos.CENTER);
+                    setGraphic(actions);
+                }
+            }
+        });
+
+        actionsColumn.setMinWidth(200);
+        actionsColumn.prefWidthProperty().bind(table.widthProperty().multiply(0.05));
+        return actionsColumn;
+    }
+
+    private ObservableList<Task> getTasks() {
+        List<Task> userTask = taskService.getTaskByUserId(user);
+        return FXCollections.observableArrayList(userTask);
+    }
+}
