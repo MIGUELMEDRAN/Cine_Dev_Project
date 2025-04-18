@@ -6,4 +6,6 @@ public interface IUserService {
     public void saveUser(User user);
 
     public User getUserByEmail(String email);
+
+    boolean existsByEmail(String email);
 }

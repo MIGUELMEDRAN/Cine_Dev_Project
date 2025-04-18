@@ -32,4 +32,11 @@ public class Ticket {
     @ManyToOne
     @JoinColumn(name = "function_id", nullable = false)
     private Functions functions;
+
+
+    public Ticket(Double price, LocalDateTime datePurchase, User user) {
+        this.price = price;
+        this.datePurchase = datePurchase;
+        this.user = user;
+    }
 }

@@ -19,4 +19,13 @@ public class UserService implements IUserService {
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email).orElse(null);
     }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    public User getUserWithRolesById(Integer id) {
+        return userRepository.findByIdWithRoles(id);
+    }
 }

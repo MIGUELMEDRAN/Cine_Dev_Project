@@ -10,7 +10,7 @@ import java.util.List;
 @Service
 public class CategoryService implements ICategoryService {
     @Autowired
-    private CategoryRepository categoryRepository;
+    CategoryRepository categoryRepository;
 
     @Override
     public void addCustomCategory(Category category) {

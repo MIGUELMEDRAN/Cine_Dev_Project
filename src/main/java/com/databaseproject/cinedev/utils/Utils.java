@@ -15,19 +15,23 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 public class Utils {
-    public static void sendMessage(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("CineDev - INFORMATION");
+    public static void sendMessage(String message, Alert.AlertType alertType) {
+        Alert alert = new Alert(alertType);
         alert.setHeaderText(null);
         alert.setContentText(message);
-        alert.showAndWait();
-    }
 
-    public static void sendMessageError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("CineDev - ERROR");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
+        if (alertType.equals(Alert.AlertType.CONFIRMATION)) {
+            alert.setTitle("CineDev - CONFIRMATION");
+        } else if(alertType.equals(Alert.AlertType.INFORMATION)) {
+            alert.setTitle("CineDev - INFORMATION");
+        } else if (alertType.equals(Alert.AlertType.ERROR)) {
+            alert.setTitle("CineDev - ERROR");
+        } else if (alertType.equals(Alert.AlertType.WARNING)) {
+            alert.setTitle("CineDev - WARNING");
+        } else {
+            alert.setTitle("CineDev - MESSAGE");
+        }
+
         alert.showAndWait();
     }
 
@@ -51,10 +55,10 @@ public class Utils {
     public static boolean isEmailValidAndRecognized(String email) {
         String emailType = recognizeTypeOfEmail(email);
         if(emailType.equals("invalid")) {
-            sendMessage("The entered email is not valid.");
+            sendMessage("The entered email is not valid.", Alert.AlertType.ERROR);
             return false;
         } else if(email.equals("unknown")) {
-            sendMessage("Unrecognized email domain. Only Gmail, Outlook or Hotmail is allowed.");
+            sendMessage("Unrecognized email domain. Only Gmail, Outlook or Hotmail is allowed.", Alert.AlertType.ERROR);
             return false;
         } else {
             return true;
@@ -107,7 +111,7 @@ public class Utils {
     }
 
     public static String formatDate(LocalDateTime date) {
-        if (date == null) return "No definido";
+        if (date == null) return "Not defined";
         return date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
     }
 }

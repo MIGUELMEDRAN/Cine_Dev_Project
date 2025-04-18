@@ -3,6 +3,7 @@ package com.databaseproject.cinedev.stages;
 import com.databaseproject.cinedev.models.base.User;
 import com.databaseproject.cinedev.models.movie.Movie;
 import com.databaseproject.cinedev.stages.components.NavBar;
+import com.databaseproject.cinedev.stages.components.movies.MovieDetails;
 import com.databaseproject.cinedev.utils.Utils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -28,7 +29,7 @@ public class MainPage implements IWindowScene {
 
     @Override
     public Scene showWindow(Stage primaryStage) {
-        StackPane mainPage = mainPage();
+        StackPane mainPage = mainPage(primaryStage);
         NavBar navBar = new NavBar(this.user, primaryStage);
 
         VBox root = new VBox(navBar, mainPage);
@@ -38,7 +39,7 @@ public class MainPage implements IWindowScene {
         return new Scene(root, 1280, 720);
     }
 
-    private StackPane mainPage() {
+    private StackPane mainPage(Stage primaryStage) {
         Label welcome = new Label("Bienvenido " + user.getFullName() +"!");
         welcome.setFont(new Font(18));
         welcome.setTextFill(Color.WHITE);
@@ -49,14 +50,14 @@ public class MainPage implements IWindowScene {
                 new Movie("Rapido y Furioso", "rapido.jpg"),
                 new Movie("Nemo", "nemo.jpg"),
                 new Movie("Lucy", "lucy.jpg")
-        ));
+        ), primaryStage);
 
         VBox nextBox = createSection("Proximamente", List.of(
                 new Movie("Coco", "coco.jpg"),
                 new Movie("Walle", "walle.jpg"),
                 new Movie("Flash", "flash.jpg"),
                 new Movie("Falcon", "falcon.jpg")
-        ));
+        ), primaryStage);
 
         VBox layout = new VBox(20, welcome, premiereBox, nextBox);
         layout.setAlignment(Pos.CENTER);
@@ -65,7 +66,7 @@ public class MainPage implements IWindowScene {
         return new StackPane(layout);
     }
 
-    private VBox createSection(String titleText, List<Movie> movies) {
+    private VBox createSection(String titleText, List<Movie> movies, Stage primaryStage) {
         Label title = new Label(titleText);
         title.setFont(Font.font(16));
         title.setTextFill(Color.ORANGE);
@@ -73,7 +74,7 @@ public class MainPage implements IWindowScene {
         HBox movieBox = new HBox(30);
         movieBox.setAlignment(Pos.CENTER);
         movies.forEach(movie -> {
-            VBox card = createMovieCard(movie);
+            VBox card = createMovieCard(movie, primaryStage);
             HBox.setMargin(card, new Insets(0, 60, 0, 60));
             movieBox.getChildren().add(card);
         });
@@ -84,7 +85,7 @@ public class MainPage implements IWindowScene {
         return section;
     }
 
-    private VBox createMovieCard(Movie movie) {
+    private VBox createMovieCard(Movie movie, Stage primaryStage) {
         Image image  = new Image(MainPage.class.getResourceAsStream("/images/movies/" + movie.getImageName()));
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(100);
@@ -98,6 +99,8 @@ public class MainPage implements IWindowScene {
         cardMovie.setAlignment(Pos.CENTER);
         cardMovie.setSpacing(10);
         cardMovie.setStyle("-fx-background-color: #444; -fx-padding: 10; -fx-background-radius: 10;");
+
+        cardMovie.setOnMouseClicked(e -> new MovieDetails().showFormModal(primaryStage, movie));
 
         return cardMovie;
     }

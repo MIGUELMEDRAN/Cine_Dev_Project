@@ -2,16 +2,12 @@ package com.databaseproject.cinedev.stages;
 
 import com.databaseproject.cinedev.CinedevApplication;
 import com.databaseproject.cinedev.models.base.User;
-import com.databaseproject.cinedev.services.base.user.IUserService;
 import com.databaseproject.cinedev.services.base.user.UserService;
 import com.databaseproject.cinedev.utils.Utils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -20,7 +16,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 public class LoginPage implements IWindowScene {
-    IUserService userService;
+    UserService userService;
 
     public LoginPage() {
         this.userService = CinedevApplication.getSpringContext().getBean(UserService.class);
@@ -94,7 +90,7 @@ public class LoginPage implements IWindowScene {
             if (email.isEmpty() || password.isEmpty()) {
                 emailField.setStyle("-fx-border-color: red;");
                 passwordField.setStyle("-fx-border-color: red;");
-                Utils.sendMessage("Ops! Please complete all fields!");
+                Utils.sendMessage("Ops! Please complete all fields!", Alert.AlertType.WARNING);
                 return;
             }
 
@@ -102,17 +98,22 @@ public class LoginPage implements IWindowScene {
                 return;
             }
 
-            User existingUser = userService.getUserByEmail(email);
-            if (existingUser == null) {
-                Utils.sendMessage("User not found. Please check your information or register one account");
+            User userFromDb = userService.getUserByEmail(email);
+            if (userFromDb == null) {
+                Utils.sendMessage("User not found. Please check your information or register one account", Alert.AlertType.ERROR);
                 return;
             }
 
+            User existingUser = userService.getUserWithRolesById(userFromDb.getId());
             if (existingUser.isPasswordCheck(password, existingUser.getPassword())) {
-                Utils.sendMessage("Login successful! Welcome.");
+
+                Utils.sendMessage("Login successful! Welcome.", Alert.AlertType.INFORMATION);
+                System.out.println("User logged in: " + existingUser.getFullName());
+                existingUser.getUserRoles().forEach(r -> System.out.println("Role: " + r.getRoles().getName()));
+
                 Utils.loadWindowsToShow(new MainPage(existingUser), primaryStage);
             } else {
-                Utils.sendMessage("Incorrect password. Try again.");
+                Utils.sendMessage("Incorrect password. Try again.", Alert.AlertType.ERROR);
                 passwordField.setStyle("-fx-border-color: red;");
             }
         });

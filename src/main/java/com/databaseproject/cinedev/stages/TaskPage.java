@@ -3,7 +3,8 @@ package com.databaseproject.cinedev.stages;
 import com.databaseproject.cinedev.models.base.User;
 import com.databaseproject.cinedev.models.task.Task;
 import com.databaseproject.cinedev.services.tasks.task.ITaskService;
-import com.databaseproject.cinedev.stages.components.TaskForm;
+import com.databaseproject.cinedev.stages.components.forms.CategoryForm;
+import com.databaseproject.cinedev.stages.components.forms.TaskForm;
 import com.databaseproject.cinedev.utils.Utils;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -29,8 +30,6 @@ public class TaskPage implements IWindowScene {
 
     private User user;
     private Task task;
-    private Integer idUser;
-
 
     public TaskPage(User existingUser, ITaskService taskService) {
         this.user = existingUser;
@@ -75,12 +74,13 @@ public class TaskPage implements IWindowScene {
 
         Button buttonAddCategory = createButton("Add Category", "#2196F3");
         buttonAddCategory.setOnAction(e -> {
-            Utils.sendMessageError("Form para agregar las categorias");
+            CategoryForm categoryForm = new CategoryForm(user);
+            categoryForm.showFormModal(primaryStage);
         });
 
         Button buttonEndedTask = createButton("Ended Task", "#F44336");
         buttonEndedTask.setOnAction(e -> {
-            Utils.sendMessageError("Tabla con las tareas terminadas");
+            Utils.sendMessage("Tabla con las tareas terminadas", Alert.AlertType.ERROR);
         });
 
         Button returnToMainPage = createButton("Back to Main", "#000000");
@@ -122,8 +122,8 @@ public class TaskPage implements IWindowScene {
         );
 
 
-        String[] columnData = {"Name", "Description", "Category", "Creation Date", "End Date", "State"};
-        String[] properties = {"name", "description", "category", "creationDate", "expirationDate", "state"};
+        String[] columnData = {"Name", "Description", "Category", "Creation Date", "End Date", "State", "Priority"};
+        String[] properties = {"name", "description", "category", "creationDate", "expirationDate", "state", "priority"};
 
         for (int i = 0; i < columnData.length; i++) {
             if (properties[i].equals("creationDate")) {
@@ -131,7 +131,7 @@ public class TaskPage implements IWindowScene {
                 creationDateColumn.setCellValueFactory(cellData ->
                         new SimpleStringProperty(Utils.formatDate(cellData.getValue().getCreatedAt()))
                 );
-                creationDateColumn.prefWidthProperty().bind(table.widthProperty().multiply(columnWidths.getOrDefault(properties[i], 0.10)));
+                creationDateColumn.prefWidthProperty().bind(table.widthProperty().multiply(columnWidths.getOrDefault(properties[i], 0.05)));
                 table.getColumns().add(creationDateColumn);
 
             } else if (properties[i].equals("state")) {
@@ -139,7 +139,7 @@ public class TaskPage implements IWindowScene {
 
                 stateColumn.setCellValueFactory(cellData -> {
                     var state = cellData.getValue().getState();
-                    return new SimpleStringProperty(state != null ? state.getName() : "Sin estado");
+                    return new SimpleStringProperty(state != null ? state.getName() : "Empty");
                 });
                 stateColumn.prefWidthProperty().bind(table.widthProperty().multiply(columnWidths.getOrDefault(properties[i], 0.10)));
                 table.getColumns().add(stateColumn);
@@ -149,12 +149,21 @@ public class TaskPage implements IWindowScene {
 
                 categoryColumn.setCellValueFactory(cellData -> {
                     var category = cellData.getValue().getCategory();
-                    return new SimpleStringProperty(category != null ? category.getName() : "Sin categoría");
+                    return new SimpleStringProperty(category != null ? category.getName() : "Empty");
                 });
 
-                categoryColumn.prefWidthProperty().bind(table.widthProperty().multiply(columnWidths.getOrDefault(properties[i], 0.10)));
+                categoryColumn.prefWidthProperty().bind(table.widthProperty().multiply(columnWidths.getOrDefault(properties[i], 0.05)));
                 table.getColumns().add(categoryColumn);
+            }  else if (properties[i].equals("priority")) {
+                TableColumn<Task, String> priorityColumn = new TableColumn<>(columnData[i]);
 
+                priorityColumn.setCellValueFactory(cellData -> {
+                    var priority = cellData.getValue().getPriority();
+                    return new SimpleStringProperty(priority != null ? priority.getName() : "Empty");
+                });
+
+                priorityColumn.prefWidthProperty().bind(table.widthProperty().multiply(columnWidths.getOrDefault(properties[i], 0.05)));
+                table.getColumns().add(priorityColumn);
             } else {
                 TableColumn<Task, String> column = new TableColumn<>(columnData[i]);
                 column.setCellValueFactory(new PropertyValueFactory<>(properties[i]));
@@ -167,7 +176,6 @@ public class TaskPage implements IWindowScene {
         table.setItems(getTasks());
         return table;
     }
-
 
     private TableColumn<Task, Void> actionsColumn(TableView<Task> table, Stage primaryStage) {
         TableColumn<Task, Void> actionsColumn = new TableColumn<>("Actions");
