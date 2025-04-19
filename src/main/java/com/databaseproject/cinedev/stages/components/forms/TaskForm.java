@@ -215,7 +215,7 @@ public class TaskForm {
                 }
 
                 ((Stage) ((Button) e.getSource()).getScene().getWindow()).close();
-                Utils.sendMessage(task == null ? "Task Save Successfully!" : "Task Edit Successfully!", Alert.AlertType.CONFIRMATION);
+                Utils.sendMessage(task == null ? "Task Save Successfully!" : "Task Edit Successfully!", Alert.AlertType.INFORMATION);
             } catch (Exception ex) {
                 Utils.sendMessage("Invalid format hour. Use HH:mm.", Alert.AlertType.ERROR);
             }

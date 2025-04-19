@@ -77,7 +77,7 @@ public class NavBar extends HBox {
         showTableTask.setMaxWidth(Double.MAX_VALUE);
         showTableTask.setOnAction(e -> {
             Utils.loadWindowsToShow(new TaskPage(user, taskService), primaryStage);
-            Utils.sendMessage(user.getFullName() + "'s tasks loaded successfully!", Alert.AlertType.CONFIRMATION);
+            Utils.sendMessage(user.getFullName() + "'s tasks loaded successfully!", Alert.AlertType.INFORMATION);
         });
 
         Button logOut = new Button("Log Out".toUpperCase());

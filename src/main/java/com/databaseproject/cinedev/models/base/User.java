@@ -1,15 +1,13 @@
 package com.databaseproject.cinedev.models.base;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -54,9 +52,17 @@ public class User {
         return BCrypt.checkpw(loginPassword, hashedPassword);
     }
 
-    public boolean hasRole(String roleName) {
-        return userRoles.stream()
-                .map(ur -> ur.getRoles().getName())
-                .anyMatch(name -> name.equals(roleName));
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
 }
