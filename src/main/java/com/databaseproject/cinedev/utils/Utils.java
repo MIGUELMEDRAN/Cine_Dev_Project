@@ -1,6 +1,7 @@
 package com.databaseproject.cinedev.utils;
 
 import com.databaseproject.cinedev.stages.IWindowScene;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -8,7 +9,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -113,5 +116,13 @@ public class Utils {
     public static String formatDate(LocalDateTime date) {
         if (date == null) return "Not defined";
         return date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+    }
+
+    public static Node typeOfIcon(String iconLiteral, String color) {
+        FontIcon icon = new FontIcon(iconLiteral);
+        icon.setIconSize(16);
+        icon.setIconColor(Paint.valueOf(color));
+
+        return icon;
     }
 }

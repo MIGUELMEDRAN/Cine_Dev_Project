@@ -50,14 +50,8 @@ public class NavBar extends HBox {
                 new Ticket(8.50, LocalDateTime.now(), user)
         );
 
-        Button checkoutButton = new Button("🛒".toUpperCase());
-        checkoutButton.setStyle("""
-                    -fx-background-color: #2ecc71;
-                    -fx-font-size: 18px;
-                    -fx-text-fill: white;
-                    -fx-font-weight: bold;
-                    -fx-padding: 5 15;
-                """);
+        Button checkoutButton = new Button("", Utils.typeOfIcon("fas-shopping-cart", "white"));
+        checkoutButton.setStyle("-fx-background-color: #2ecc71;");
         checkoutButton.setMaxWidth(Double.MAX_VALUE);
         checkoutButton.setOnAction(e -> {
             CheckoutView checkoutView = new CheckoutView(userTickets);
