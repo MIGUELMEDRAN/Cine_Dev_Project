@@ -11,7 +11,7 @@ import lombok.ToString;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
+@ToString(exclude = {"user", "roles"})
 public class UserRoles {
 
     @EmbeddedId
