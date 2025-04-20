@@ -31,4 +31,17 @@ public class CategoryService implements ICategoryService {
     public Category getByName(String name) {
         return categoryRepository.findByNameIgnoreCase(name).orElse(null);
     }
+
+    @Override
+    public void categoriesFromUserAdmin(Integer userId) {
+        var dummyUser = new com.databaseproject.cinedev.models.base.User();
+        dummyUser.setId(userId); // Hibernate usará solo el ID para el filtro
+
+        List<Category> categories = categoryRepository.findByUserAdminId(dummyUser);
+        for (Category category : categories) {
+            category.setUserAdminId(null);
+            categoryRepository.save(category);
+        }
+    }
+
 }

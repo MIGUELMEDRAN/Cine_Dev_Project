@@ -3,6 +3,7 @@ package com.databaseproject.cinedev.stages;
 import com.databaseproject.cinedev.CinedevApplication;
 import com.databaseproject.cinedev.models.base.User;
 import com.databaseproject.cinedev.services.base.user.UserService;
+import com.databaseproject.cinedev.services.tasks.category.CategoryService;
 import com.databaseproject.cinedev.stages.components.forms.UserEditForm;
 import com.databaseproject.cinedev.utils.Utils;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -28,10 +29,12 @@ public class UserPage implements IWindowScene {
     private User user;
 
     UserService userService;
+    CategoryService categoryService;
 
     public UserPage(User user) {
         this.user = user;
         this.userService = CinedevApplication.getSpringContext().getBean(UserService.class);
+        this.categoryService = CinedevApplication.getSpringContext().getBean(CategoryService.class);
     }
 
     @Override
@@ -151,9 +154,14 @@ public class UserPage implements IWindowScene {
 
                     boolean confirmed = Utils.confirmDialog("Are you sure you want to eliminate " + userView.getFullName() + "?");
                     if (confirmed) {
-                        userService.deleteUser(userView);
+                        User managedUser = userService.findByIdWithEverything(userView.getId());
+
+                        categoryService.categoriesFromUserAdmin(managedUser.getId());
+                        userService.deleteUser(managedUser);
+
                         table.setItems(getUsers());
                         table.refresh();
+                        Utils.sendMessage("User deleted successfully.", Alert.AlertType.INFORMATION);
                     }
                 });
             }

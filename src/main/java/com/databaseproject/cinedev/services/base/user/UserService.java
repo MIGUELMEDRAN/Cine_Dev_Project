@@ -13,8 +13,8 @@ public class UserService implements IUserService {
     private UserRepository userRepository;
 
     @Override
-    public void saveUser(User user) {
-        userRepository.save(user);
+    public User saveUser(User user) {
+        return userRepository.save(user);
     }
 
     @Override
@@ -43,5 +43,13 @@ public class UserService implements IUserService {
 
     public List<User> getAllUsersWithRoles() {
         return userRepository.findAllWithRoles();
+    }
+
+    public User findById(Integer id) {
+        return userRepository.findById(id).orElse(null);
+    }
+
+    public User findByIdWithEverything(Integer id) {
+        return userRepository.findByIdWithEverything(id);
     }
 }

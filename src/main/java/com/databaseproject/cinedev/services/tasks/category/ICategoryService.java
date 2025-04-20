@@ -12,4 +12,7 @@ public interface ICategoryService {
     public List<Category> getAllCategories();
 
     public Category getByName(String name);
+
+    public void categoriesFromUserAdmin(Integer userId);
+
 }

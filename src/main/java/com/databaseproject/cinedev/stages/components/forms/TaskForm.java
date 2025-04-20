@@ -238,8 +238,17 @@ public class TaskForm {
         var allCategories = categoryService.getAllCategories();
 
         return switch (type) {
-            case DEFAULT -> allCategories.stream().filter(Category::isDefault).toList();
-            case USER -> allCategories.stream().filter(category -> !category.isDefault() && category.getUserAdminId().getId().equals(user.getId())).toList();
+            case DEFAULT -> allCategories.stream()
+                    .filter(Category::isDefault)
+                    .toList();
+            case USER -> allCategories.stream()
+                    .filter(category ->
+                            !category.isDefault() &&
+                                    category.getUserAdminId() != null &&
+                                    category.getUserAdminId().getId() != null &&
+                                    category.getUserAdminId().getId().equals(user.getId())
+                    )
+                    .toList();
             case ALL -> allCategories;
         };
     }

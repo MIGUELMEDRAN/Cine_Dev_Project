@@ -1,5 +1,6 @@
 package com.databaseproject.cinedev.models.base;
 
+import com.databaseproject.cinedev.models.task.Task;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -30,8 +31,13 @@ public class User {
     @Column(name = "updated_at", updatable = false)
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private Set<UserRoles> userRoles = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private Set<Task> tasks = new HashSet<>();
 
     public User(String fullName, String email, String password) {
         this.fullName = fullName;

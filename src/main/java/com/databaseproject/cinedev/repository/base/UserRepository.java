@@ -22,4 +22,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.userRoles ur LEFT JOIN FETCH ur.roles")
     List<User> findAllWithRoles();
 
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.tasks t LEFT JOIN FETCH t.category c LEFT JOIN FETCH c.userAdminId WHERE u.id = :id")
+    User findByIdWithEverything(@Param("id") Integer id);
 }

@@ -94,33 +94,35 @@ public class UserEditForm {
             Roles selectedRole = roleSelector.getValue();
             Roles managedRole = roleService.findById(selectedRole.getId());
 
-
             if (name.isEmpty() || email.isEmpty() || managedRole == null) {
                 Utils.sendMessage("All fields are required, including role.", Alert.AlertType.WARNING);
                 return;
             }
 
+            boolean isNewUser = user.getId() == null;
+
             user.setFullName(name);
             user.setEmail(email);
-            if (user.getId() == null) {
+
+            if (isNewUser) {
                 if (password.isEmpty()) {
                     Utils.sendMessage("Password is required for new users.", Alert.AlertType.WARNING);
                     return;
                 }
                 user.setPassword(user.hashPassword(password));
+                user.setCreatedAt(LocalDateTime.now());
             }
-            user.setCreatedAt(LocalDateTime.now());
-            user.getUserRoles().clear();
 
-            userService.saveUser(user);
+            User savedUser = userService.saveUser(user);
 
             UserRoles newUserRole = new UserRoles();
-            newUserRole.setUser(user);
+            newUserRole.setUser(savedUser);
             newUserRole.setRoles(managedRole);
-            newUserRole.setId(new UserRoleId(user.getId(), managedRole.getId()));
+            newUserRole.setId(new UserRoleId(savedUser.getId(), managedRole.getId()));
 
-            user.setUserRoles(Set.of(newUserRole));
-            userService.saveUser(user);
+            savedUser.setUserRoles(Set.of(newUserRole));
+
+            userService.saveUser(savedUser);
 
             userAdded.run();
             modal.close();
