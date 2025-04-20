@@ -44,7 +44,7 @@ public class User {
         this.password = password;
     }
 
-    private String hashPassword(String password) {
+    public String hashPassword(String password) {
         return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 

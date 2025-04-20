@@ -4,6 +4,7 @@ import com.databaseproject.cinedev.stages.IWindowScene;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -96,6 +97,17 @@ public class Utils {
         Scene scene = windowScene.showWindow(primaryStage);
         primaryStage.setScene(scene);
         primaryStage.centerOnScreen();
+    }
+
+    public static Button createButton(String label, String color) {
+        Button button = new Button(label);
+        button.setStyle(
+                "-fx-background-color: " + color + "; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-weight: bold;"
+        );
+        button.setMaxWidth(Double.MAX_VALUE);
+        return button;
     }
 
     public static void removeErrorStyleOnTyping(TextField field) {

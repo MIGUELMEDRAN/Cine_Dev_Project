@@ -1,6 +1,7 @@
 package com.databaseproject.cinedev;
 
 import com.databaseproject.cinedev.stages.LoginPage;
+import io.github.cdimascio.dotenv.Dotenv;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -20,6 +21,16 @@ public class CinedevApplication extends Application {
 
 	@Override
 	public void init() {
+		Dotenv dotenv = Dotenv.configure()
+				.directory("./")
+				.ignoreIfMalformed()
+				.ignoreIfMissing()
+				.load();
+
+		System.setProperty("DB_URL", dotenv.get("DB_URL"));
+		System.setProperty("DB_USER", dotenv.get("DB_USER"));
+		System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
+
 		springContext = new SpringApplicationBuilder(CinedevApplication.class).run();
 	}
 

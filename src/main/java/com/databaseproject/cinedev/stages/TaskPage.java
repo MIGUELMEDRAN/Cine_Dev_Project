@@ -67,26 +67,26 @@ public class TaskPage implements IWindowScene {
         titleBox.setAlignment(Pos.CENTER);
         titleBox.setSpacing(2);
 
-        Button buttonAddTask = createButton("Add Task", "#4CAF50");
+        Button buttonAddTask = Utils.createButton("Add Task", "#4CAF50");
         TableView<Task> table = createTableTasks(primaryStage);
         buttonAddTask.setOnAction(e -> {
             TaskForm showModalTask = new TaskForm(user, task, () -> table.setItems(getTasks()));
             showModalTask.showFormModal(primaryStage);
         });
 
-        Button buttonAddCategory = createButton("Add Category", "#2196F3");
+        Button buttonAddCategory = Utils.createButton("Add Category", "#2196F3");
         buttonAddCategory.setOnAction(e -> {
             CategoryForm categoryForm = new CategoryForm(user, category);
             categoryForm.showFormModal(primaryStage);
         });
 
-        Button buttonEndedTask = createButton("Ended Tasks", "#F44336");
+        Button buttonEndedTask = Utils.createButton("Ended Tasks", "#F44336");
         buttonEndedTask.setOnAction(e -> {
             List<Task> completedTask = getTasks().stream().filter(task -> "COMPLETED".equalsIgnoreCase(task.getState().getName())).toList();
             table.getItems().setAll(completedTask);
         });
 
-        Button buttonBackAllTask = createButton("Active Tasks", "#9C27B0");
+        Button buttonBackAllTask = Utils.createButton("Active Tasks", "#9C27B0");
         buttonBackAllTask.setOnAction(e -> {
             List<Task> activeTasks = getTasks().stream().filter(task -> {
                 String state = task.getState().getName().toUpperCase();
@@ -95,7 +95,7 @@ public class TaskPage implements IWindowScene {
             table.getItems().setAll(activeTasks);
         });
 
-        Button returnToMainPage = createButton("Back to Main", "#000000");
+        Button returnToMainPage = Utils.createButton("Back to Main", "#000000");
         returnToMainPage.setOnAction(e -> {
             Utils.loadWindowsToShow(new MainPage(user), primaryStage);
         });
@@ -109,17 +109,6 @@ public class TaskPage implements IWindowScene {
         form.setFillWidth(true);
 
         return new StackPane(form);
-    }
-
-    private static Button createButton(String label, String color) {
-        Button button = new Button(label);
-        button.setStyle(
-                "-fx-background-color: " + color + "; " +
-                        "-fx-text-fill: white; " +
-                        "-fx-font-weight: bold;"
-        );
-        button.setMaxWidth(Double.MAX_VALUE);
-        return button;
     }
 
     private TableView<Task> createTableTasks(Stage primaryStage) {

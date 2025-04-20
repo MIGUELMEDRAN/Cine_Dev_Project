@@ -19,6 +19,8 @@ import javafx.stage.Stage;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CategoryForm {
     private User user;
@@ -121,7 +123,17 @@ public class CategoryForm {
         categoryView.setPadding(new Insets(10, 15, 10, 15));
         categoryView.setStyle("-fx-background-color: #f9f9f9; -fx-border-color: #ddd; -fx-border-width: 1px 0 0 0;");
 
-        for (Category category : categoryService.getAllCategories()) {
+        List<Category> categoriesByUser;
+        boolean isAdmin = userRoleService.isAdmin(user.getId());
+        if (isAdmin) {
+            categoriesByUser = categoryService.getAllCategories();
+        } else {
+            categoriesByUser = categoryService.getAllCategories().stream().filter(category ->
+                    category.isDefault() || (category.getUserAdminId() != null && category.getUserAdminId().getId().equals(user.getId()))
+            ).collect(Collectors.toList());
+        }
+
+        for (Category category : categoriesByUser) {
             HBox item = new HBox(10);
             item.setSpacing(10);
             item.setAlignment(Pos.CENTER_LEFT);
@@ -137,7 +149,7 @@ public class CategoryForm {
 
             Button deleteButton = new Button("", Utils.typeOfIcon("fas-trash", "red"));
             deleteButton.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
-            deleteButton.setDisable(category.isDefault());
+            deleteButton.setDisable(category.isDefault() && !isAdmin);
 
             deleteButton.setOnAction(e -> {
                 categoryService.removeCustomCategory(category);
@@ -148,7 +160,7 @@ public class CategoryForm {
 
             Button updateButton = new Button("", Utils.typeOfIcon("fas-pencil-alt", "green"));
             updateButton.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
-            updateButton.setDisable(category.isDefault());
+            updateButton.setDisable(category.isDefault() && !isAdmin);
 
             updateButton.setOnAction(e -> {
                 nameField.setText(category.getName());
