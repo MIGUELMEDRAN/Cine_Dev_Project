@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +12,6 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class Ticket {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
@@ -39,4 +37,27 @@ public class Ticket {
         this.datePurchase = datePurchase;
         this.user = user;
     }
+
+    @Override
+    public String toString() {
+        String movieTitle = functions != null && functions.getMovie() != null
+                ? functions.getMovie().getTitle()
+                : "Unknown Movie";
+
+        String roomName = functions != null && functions.getRoom() != null
+                ? functions.getRoom().getName()
+                : "Unknown Room";
+
+        String time = functions != null && functions.getStartTime() != null
+                ? functions.getStartTime().toString()
+                : "Unknown Time";
+
+        String seat = chairs != null ? chairs.getNumber() : "Unknown Seat";
+
+        return String.format(
+                "🎬 %s | 🛋 Room: %s | ⏰ %s | 💺 Seat: %s | 💵 $%.2f",
+                movieTitle, roomName, time, seat, price != null ? price : 0.0
+        );
+    }
+
 }

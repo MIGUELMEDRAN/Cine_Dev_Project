@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 
 public class CategoryForm {
     private User user;
+    private Category categoryToUpdate;
 
     private final CategoryService categoryService;
     private final UserRoleService userRoleService;
@@ -33,11 +34,13 @@ public class CategoryForm {
     private final TextArea descriptionArea = new TextArea();
     private final DatePicker datePicker = new DatePicker(LocalDate.now());
 
-    public CategoryForm(User user) {
+    public CategoryForm(User user, Category category) {
         this.categoryService = CinedevApplication.getSpringContext().getBean(CategoryService.class);
         this.userService = CinedevApplication.getSpringContext().getBean(UserService.class);
         this.userRoleService = CinedevApplication.getSpringContext().getBean(UserRoleService.class);
+
         this.user = userService.getUserWithRolesById(user.getId());
+        this.categoryToUpdate = category;
     }
 
     public void showFormModal(Stage primaryStage) {
@@ -68,6 +71,17 @@ public class CategoryForm {
         saveButton.setMaxWidth(Double.MAX_VALUE);
         saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;");
 
+        if (categoryToUpdate != null) {
+            nameField.setText(categoryToUpdate.getName());
+            descriptionArea.setText(categoryToUpdate.getDescription());
+
+            statusCombo.setValue(categoryToUpdate.getState());
+            datePicker.setValue(categoryToUpdate.getCreatedAt().toLocalDate());
+
+            defaultCheck.setSelected(categoryToUpdate.isDefault());
+            saveButton.setText("Update Category");
+        }
+
         saveButton.setOnAction(e -> {
             String name = nameField.getText().trim();
             String status = statusCombo.getValue();
@@ -80,18 +94,21 @@ public class CategoryForm {
                 return;
             }
 
-            Category category = new Category();
-            category.setName(name);
-            category.setDescription(description);
-            category.setDefault(isDefault);
-            category.setState(status);
-            category.setUserAdminId(user);
-            category.setCreatedAt(LocalDateTime.now());
+            Category categoryToSave = (categoryToUpdate != null) ? categoryToUpdate : new Category();
+            categoryToSave.setName(name);
+            categoryToSave.setDescription(description);
+            categoryToSave.setDefault(isDefault);
+            categoryToSave.setState(status);
+            categoryToSave.setUserAdminId(user);
+            categoryToSave.setCreatedAt(LocalDateTime.now());
 
-            categoryService.addCustomCategory(category);
+            categoryService.addCustomCategory(categoryToSave);
 
             ((Stage) ((Button) e.getSource()).getScene().getWindow()).close();
-            Utils.sendMessage("Category saved successfully!", Alert.AlertType.INFORMATION);
+            Utils.sendMessage(
+                    (categoryToUpdate != null ? "Category updated successfully!" : "Category saved successfully!"),
+                    Alert.AlertType.INFORMATION
+            );
         });
 
         Separator separator = new Separator();
@@ -101,7 +118,7 @@ public class CategoryForm {
         categoriesLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-font-family: 'Arial';");
 
         VBox categoryView = new VBox(5);
-        categoryView.setPadding(new Insets(10, 15, 10 , 15));
+        categoryView.setPadding(new Insets(10, 15, 10, 15));
         categoryView.setStyle("-fx-background-color: #f9f9f9; -fx-border-color: #ddd; -fx-border-width: 1px 0 0 0;");
 
         for (Category category : categoryService.getAllCategories()) {
@@ -118,8 +135,8 @@ public class CategoryForm {
             nameItem.setStyle("-fx-font-weight: bold;");
             HBox.setHgrow(nameItem, Priority.ALWAYS);
 
-            Button deleteButton = new Button(category.isDefault() ? "Default" : "Delete");
-            deleteButton.setStyle("-fx-background-color: #F44336; -fx-text-fill: white; -fx-font-weight: bold;");
+            Button deleteButton = new Button("", Utils.typeOfIcon("fas-trash", "red"));
+            deleteButton.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
             deleteButton.setDisable(category.isDefault());
 
             deleteButton.setOnAction(e -> {
@@ -129,7 +146,24 @@ public class CategoryForm {
                 Utils.sendMessage("Category " + category.getName().toUpperCase() + " deleted.", Alert.AlertType.INFORMATION);
             });
 
-            item.getChildren().addAll(nameItem, deleteButton);
+            Button updateButton = new Button("", Utils.typeOfIcon("fas-pencil-alt", "green"));
+            updateButton.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+            updateButton.setDisable(category.isDefault());
+
+            updateButton.setOnAction(e -> {
+                nameField.setText(category.getName());
+                statusCombo.setValue(category.getState());
+                defaultCheck.setSelected(category.isDefault());
+                descriptionArea.setText(category.getDescription());
+                if (category.getCreatedAt() == null) {
+                    category.setCreatedAt(LocalDateTime.now());
+                }
+
+                this.categoryToUpdate = category;
+                saveButton.setText("Update Category");
+            });
+
+            item.getChildren().addAll(nameItem, updateButton, deleteButton);
             categoryView.getChildren().add(item);
         }
 
@@ -147,7 +181,7 @@ public class CategoryForm {
                 statusLabel, statusCombo
         );
 
-        if(userRoleService.isAdmin(user.getId())) {
+        if (userRoleService.isAdmin(user.getId())) {
             view.getChildren().addAll(defaultLabel, defaultCheck);
         }
 

@@ -1,6 +1,7 @@
 package com.databaseproject.cinedev.stages;
 
 import com.databaseproject.cinedev.models.base.User;
+import com.databaseproject.cinedev.models.task.Category;
 import com.databaseproject.cinedev.models.task.Task;
 import com.databaseproject.cinedev.services.tasks.task.ITaskService;
 import com.databaseproject.cinedev.stages.components.forms.CategoryForm;
@@ -30,6 +31,7 @@ public class TaskPage implements IWindowScene {
 
     private User user;
     private Task task;
+    private Category category;
 
     public TaskPage(User existingUser, ITaskService taskService) {
         this.user = existingUser;
@@ -74,13 +76,23 @@ public class TaskPage implements IWindowScene {
 
         Button buttonAddCategory = createButton("Add Category", "#2196F3");
         buttonAddCategory.setOnAction(e -> {
-            CategoryForm categoryForm = new CategoryForm(user);
+            CategoryForm categoryForm = new CategoryForm(user, category);
             categoryForm.showFormModal(primaryStage);
         });
 
-        Button buttonEndedTask = createButton("Ended Task", "#F44336");
+        Button buttonEndedTask = createButton("Ended Tasks", "#F44336");
         buttonEndedTask.setOnAction(e -> {
-            Utils.sendMessage("Tabla con las tareas terminadas", Alert.AlertType.ERROR);
+            List<Task> completedTask = getTasks().stream().filter(task -> "COMPLETED".equalsIgnoreCase(task.getState().getName())).toList();
+            table.getItems().setAll(completedTask);
+        });
+
+        Button buttonBackAllTask = createButton("Active Tasks", "#9C27B0");
+        buttonBackAllTask.setOnAction(e -> {
+            List<Task> activeTasks = getTasks().stream().filter(task -> {
+                String state = task.getState().getName().toUpperCase();
+                return state.equals("PENDING") || state.equals("IN_PROGRESS");
+            }).toList();
+            table.getItems().setAll(activeTasks);
         });
 
         Button returnToMainPage = createButton("Back to Main", "#000000");
@@ -88,7 +100,7 @@ public class TaskPage implements IWindowScene {
             Utils.loadWindowsToShow(new MainPage(user), primaryStage);
         });
 
-        HBox buttons = new HBox(25, buttonAddTask, buttonAddCategory, buttonEndedTask, returnToMainPage);
+        HBox buttons = new HBox(25, buttonAddTask, buttonAddCategory, buttonEndedTask, buttonBackAllTask, returnToMainPage);
         buttons.setAlignment(Pos.CENTER);
 
         VBox form = new VBox(50, titleBox, buttons, table);
@@ -180,14 +192,12 @@ public class TaskPage implements IWindowScene {
     private TableColumn<Task, Void> actionsColumn(TableView<Task> table, Stage primaryStage) {
         TableColumn<Task, Void> actionsColumn = new TableColumn<>("Actions");
         actionsColumn.setCellFactory(col -> new TableCell<>() {
-            private final Button btnEdit = new Button("Edit");
-            private final Button btnDelete = new Button("Delete");
+            private final Button btnEdit = new Button("", Utils.typeOfIcon("fas-pencil-alt", "green"));
+            private final Button btnDelete = new Button("", Utils.typeOfIcon("fas-trash", "red"));
 
             {
                 LocalDateTime now = LocalDateTime.now();
                 String formattedNow = Utils.formatDate(now);
-                btnEdit.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
-                btnDelete.setStyle("-fx-background-color: #F44336; -fx-text-fill: white;");
 
                 btnEdit.setOnAction(e -> {
                     Task task = getTableView().getItems().get(getIndex());
