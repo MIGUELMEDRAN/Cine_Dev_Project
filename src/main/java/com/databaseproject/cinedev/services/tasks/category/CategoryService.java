@@ -44,4 +44,8 @@ public class CategoryService implements ICategoryService {
         }
     }
 
+    @Override
+    public boolean hasTasksAssociated(Category category) {
+        return categoryRepository.existsTasksByCategoryId(category.getId());
+    }
 }

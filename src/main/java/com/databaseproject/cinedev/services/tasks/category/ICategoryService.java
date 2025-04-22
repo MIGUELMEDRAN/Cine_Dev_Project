@@ -15,4 +15,6 @@ public interface ICategoryService {
 
     public void categoriesFromUserAdmin(Integer userId);
 
+    public boolean hasTasksAssociated(Category category);
+
 }

@@ -129,8 +129,9 @@ public class CategoryForm {
             categoriesByUser = categoryService.getAllCategories();
         } else {
             categoriesByUser = categoryService.getAllCategories().stream().filter(category ->
-                    category.isDefault() || (category.getUserAdminId() != null && category.getUserAdminId().getId().equals(user.getId()))
-            ).collect(Collectors.toList());
+                            !category.isDefault() && category.getUserAdminId() != null
+                            && category.getUserAdminId().getId().equals(user.getId()))
+                    .collect(Collectors.toList());
         }
 
         for (Category category : categoriesByUser) {
@@ -152,6 +153,11 @@ public class CategoryForm {
             deleteButton.setDisable(category.isDefault() && !isAdmin);
 
             deleteButton.setOnAction(e -> {
+                if (categoryService.hasTasksAssociated(category)) {
+                    Utils.sendMessage("Cannot delete category. It has tasks associated.", Alert.AlertType.WARNING);
+                    return;
+                }
+
                 categoryService.removeCustomCategory(category);
                 categoryView.getChildren().remove(item);
 
